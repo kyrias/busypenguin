@@ -4,7 +4,7 @@ from slackclient import SlackClient
 
 
 class Notifier:
-    def __init__(self, access_token, channel=None):
+    def __init__(self, access_token, channel):
         self.client = SlackClient(access_token)
         self.channel = channel
 
