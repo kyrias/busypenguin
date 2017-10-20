@@ -9,54 +9,8 @@ class Notifier:
         self.channel = channel
 
     def task(self, *args, **kwargs):
+
         return Task(self, *args, **kwargs)
-
-
-class Message:
-    def __init__(self, notifier, color=None, title=None, text=None, callback_id=None, actions=None):
-        self.notifier = notifier
-        self.main = {'color': color,
-                     'title': title,
-                     'text': text,
-                     'fields': [],
-                     'callback_id': callback_id,
-                     'actions': actions}
-        self.extra = []
-        self.ts = None
-
-    def update(self, color=None, title=None, text=None, actions=None):
-        for (k, v) in [('color', color), ('title', title), ('text', text), ('actions', actions)]:
-            if v is not None:
-                self.main[k] = v
-
-    def add_field(self, title=None, value=None, short=None):
-        self.main['fields'].append({'title': title, 'value': value, 'short': short})
-        return len(self.main['fields']) - 1
-
-    def update_field(self, index, title=None, value=None, short=None):
-        for (k, v) in [('title', title), ('value', value), ('short', short)]:
-            if v is not None:
-                self.main['fields'][index][k] = v
-
-    def add_attachment(self, attachment):
-        self.extra.append(attachment)
-        return len(self.extra) - 1
-
-    def update_attachment(self, index, attachment):
-        self.extra[index] = attachment
-
-    def publish(self):
-        attachments = [self.main] + self.extra
-        if not self.ts:
-            r = self.notifier.client.api_call('chat.postMessage',
-                                              channel=self.notifier.channel,
-                                              attachments=attachments)
-            self.ts = r['ts']
-        else:
-            r = self.notifier.client.api_call('chat.update',
-                                              channel=self.notifier.channel,
-                                              ts=self.ts,
-                                              attachments=attachments)
 
 
 class Task:
@@ -140,3 +94,50 @@ class Subtask:
         self.text = text
         self.task.message.update_field(self.index, value=self.prefix+self.text)
         self.task.message.publish()
+
+
+class Message:
+    def __init__(self, notifier, color=None, title=None, text=None, callback_id=None, actions=None):
+        self.notifier = notifier
+        self.main = {'color': color,
+                     'title': title,
+                     'text': text,
+                     'fields': [],
+                     'callback_id': callback_id,
+                     'actions': actions}
+        self.extra = []
+        self.ts = None
+
+    def update(self, color=None, title=None, text=None, actions=None):
+        for (k, v) in [('color', color), ('title', title), ('text', text), ('actions', actions)]:
+            if v is not None:
+                self.main[k] = v
+
+    def add_field(self, title=None, value=None, short=None):
+        self.main['fields'].append({'title': title, 'value': value, 'short': short})
+        return len(self.main['fields']) - 1
+
+    def update_field(self, index, title=None, value=None, short=None):
+        for (k, v) in [('title', title), ('value', value), ('short', short)]:
+            if v is not None:
+                self.main['fields'][index][k] = v
+
+    def add_attachment(self, attachment):
+        self.extra.append(attachment)
+        return len(self.extra) - 1
+
+    def update_attachment(self, index, attachment):
+        self.extra[index] = attachment
+
+    def publish(self):
+        attachments = [self.main] + self.extra
+        if not self.ts:
+            r = self.notifier.client.api_call('chat.postMessage',
+                                              channel=self.notifier.channel,
+                                              attachments=attachments)
+            self.ts = r['ts']
+        else:
+            r = self.notifier.client.api_call('chat.update',
+                                              channel=self.notifier.channel,
+                                              ts=self.ts,
+                                              attachments=attachments)
